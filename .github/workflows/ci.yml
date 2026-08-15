@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Compile & syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compile C examples
+        run: |
+          gcc -std=c11 -Wall -Wextra -o "$RUNNER_TEMP/c_hello" c/hello.c
+          gcc -std=c11 -Wall -Wextra -o "$RUNNER_TEMP/c_char" c/char_counter.c
+
+      - name: Compile C++ examples
+        run: |
+          g++ -std=c++17 -Wall -Wextra -o "$RUNNER_TEMP/cpp_hello" cpp/hello.cpp
+          g++ -std=c++17 -Wall -Wextra -o "$RUNNER_TEMP/cpp_base" cpp/base_converter.cpp
+
+      - name: Check JavaScript syntax
+        run: node --check js/hello.js
+
+      - name: Compile Python examples
+        run: python3 -m py_compile python/hello.py
