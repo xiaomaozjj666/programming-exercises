@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
   <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
-  <img src="https://img.shields.io/badge/tests-42%20cases-brightgreen" alt="42 个内置测试用例" />
+  <img src="https://img.shields.io/badge/tests-40%20cases-brightgreen" alt="40 个内置测试用例" />
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
