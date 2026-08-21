@@ -5,11 +5,59 @@
   <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
   <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
+  <img src="https://img.shields.io/badge/tests-42%20cases-brightgreen" alt="42 个内置测试用例" />
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
 
 面向初学者的多语言编程练习仓库。每个目录是一类语言的入门示例，覆盖最基础的输入输出、控制流、字符处理与算法小练习。
+
+本仓库于 2026-08-22 合并了三个仓库：
+- **programming-exercises**（原仓库）
+- **code-practice** → 并入 [`starter-template/`](starter-template/)（多语言项目骨架 + 真实测试）
+- **base-conversion** 的进制转换 → 并入 `python/base_converter.py`、`js/base_converter.js`、`cpp/base_converter.cpp`（三语一致，支持负数与小数）
+
+## 仓库总览
+
+```mermaid
+flowchart LR
+    subgraph EXAMPLES["入门示例"]
+        C["c/ · hello.c + char_counter.c"]
+        CPP["cpp/ · hello.cpp + base_converter.cpp"]
+        JS["js/ · hello.js + base_converter.js"]
+        PY["python/ · hello.py + base_converter.py"]
+    end
+    subgraph TEMPLATE["项目骨架"]
+        ST["starter-template/<br/>四语言入口 + 真实测试"]
+    end
+    C --> CI["CI 自动校验<br/>编译 / 语法检查 / 测试"]
+    CPP --> CI
+    JS --> CI
+    PY --> CI
+    ST --> CI
+```
+
+## 进制转换器（三语一致 · 支持负数与小数）
+
+三份实现共用同一套函数与语义：任意进制互转（2-36）、负数、小数（最多 15 位）、`--test` 内置测试，并在 CI 中自动执行。
+
+| 语言 | 文件 | 精度策略 |
+| --- | --- | --- |
+| Python | [`python/base_converter.py`](python/base_converter.py) | `int` 任意精度整数 + `Fraction` 精确小数 |
+| JavaScript | [`js/base_converter.js`](js/base_converter.js) | `BigInt` 整数（避免 2^53 丢失）+ 有理数小数 |
+| C++ | [`cpp/base_converter.cpp`](cpp/base_converter.cpp) | `long long` 整数 + `double` 小数（教学示例） |
+
+```bash
+# 三语用法一致
+python3 python/base_converter.py 255 10 16     # -> FF
+node    js/base_converter.js -123 10 2          # -> -1111011
+./cpp/base_converter 10.5 10 16                 # -> A.8（先编译）
+
+# 内置测试（13+13+11 = 37 个断言）
+python3 python/base_converter.py --test
+node    js/base_converter.js --test
+./cpp/base_converter --test
+```
 
 ## 示例总览
 
@@ -21,35 +69,20 @@ flowchart LR
     end
     subgraph CPP["C++（g++）"]
         P1["hello.cpp<br/>流式输入输出"]
-        P2["base_converter.cpp<br/>2-36 进制转换"]
+        P2["base_converter.cpp<br/>2-36 进制转换（负数/小数）"]
     end
     subgraph JS["JavaScript（node）"]
         J1["hello.js<br/>控制台输出"]
+        J2["base_converter.js<br/>2-36 进制转换（负数/小数）"]
     end
     subgraph PY["Python（python3）"]
         Y1["hello.py<br/>打印输出"]
+        Y2["base_converter.py<br/>2-36 进制转换（负数/小数）"]
     end
-    C --> CHK["CI 自动校验<br/>编译 / 语法检查"]
+    C --> CHK["CI 自动校验<br/>编译 / 语法检查 / 测试"]
     CPP --> CHK
     JS --> CHK
     PY --> CHK
-```
-
-## 目录结构
-
-```
-c/        C 语言示例（gcc 编译）
-  hello.c            入门：标准输入输出，打印 "Hello, C!"
-  char_counter.c     字符统计：从标准输入读取一行，统计大写字母、小写字母、
-                     空格、数字与其他字符的个数
-cpp/      C++ 示例（g++ 编译）
-  hello.cpp          入门：流式输入输出，打印 "Hello, C++!"
-  base_converter.cpp 任意进制转换器：支持 2-36 进制互转、大小写不敏感输入，
-                     并输出运行耗时与时间复杂度分析
-js/       JavaScript 示例（node 运行）
-  hello.js           入门：控制台输出 "Hello, JavaScript!"
-python/   Python 示例（python3 运行）
-  hello.py           入门：打印 "Hello, project!"
 ```
 
 ## 如何运行
@@ -73,26 +106,48 @@ g++ cpp/hello.cpp -o hello
 
 g++ cpp/base_converter.cpp -o base_converter
 ./base_converter
-# 按提示输入数字、源进制、目标进制，例如：FF / 16 / 10
+# 交互：输入数字、源进制、目标进制，例如：FF / 16 / 10
+# 命令行：./base_converter FF 16 10
 ```
 
 ### JavaScript
 
 ```bash
 node js/hello.js
+node js/base_converter.js FF 16 10
 ```
 
 ### Python
 
 ```bash
 python3 python/hello.py
+python3 python/base_converter.py FF 16 10
+```
+
+### 项目骨架（starter-template）
+
+```bash
+cd starter-template
+python src/main.py                 # 或 node src/index.js / gcc src/main.c ...
+python -m unittest discover -s tests -v   # 运行真实测试
 ```
 
 > Windows 用户请将编译产物命名为 `.exe`（如 `gcc c/hello.c -o hello.exe`），运行 `.\hello.exe`。
 
 ## 校验
 
-仓库通过 GitHub Actions 自动检查：C/C++ 示例使用 `gcc`/`g++` 编译、JS 使用 `node --check`、Python 使用 `python3 -m py_compile`，确保每个示例文件至少能通过编译/语法检查。
+仓库通过 GitHub Actions 自动检查：
+
+- C/C++ 示例使用 `gcc`/`g++` 编译（含 `-Wall -Wextra`）
+- JS 使用 `node --check` 语法检查
+- Python 使用 `python3 -m py_compile`
+- 三语进制转换器各运行 `--test`（37 个断言）
+- `starter-template` 运行 `python -m unittest`（3 个真实断言）
+
+## 历史仓库
+
+- [`code-practice`](https://github.com/xiaomaozjj666/code-practice)：已合并至 `starter-template/`
+- [`base-conversion`](https://github.com/xiaomaozjj666/base-conversion)：进制转换已并入本仓库；其 benchmark 源码与实测图表保留在原仓库作归档
 
 ## 许可证
 

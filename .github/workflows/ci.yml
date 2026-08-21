@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Compile & syntax check
+    name: Compile & test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -24,7 +24,25 @@ jobs:
           g++ -std=c++17 -Wall -Wextra -o "$RUNNER_TEMP/cpp_base" cpp/base_converter.cpp
 
       - name: Check JavaScript syntax
-        run: node --check js/hello.js
+        run: |
+          node --check js/hello.js
+          node --check js/base_converter.js
 
       - name: Compile Python examples
-        run: python3 -m py_compile python/hello.py
+        run: |
+          python3 -m py_compile python/hello.py
+          python3 -m py_compile python/base_converter.py
+
+      - name: Run base converters (--test)
+        run: |
+          "$RUNNER_TEMP/cpp_base" --test
+          node js/base_converter.js --test
+          python3 python/base_converter.py --test
+
+      - name: Starter template (compile + real tests)
+        run: |
+          gcc -std=c11 -Wall -Wextra -o "$RUNNER_TEMP/st_c" starter-template/src/main.c
+          g++ -std=c++17 -Wall -Wextra -o "$RUNNER_TEMP/st_cpp" starter-template/src/main.cpp
+          node --check starter-template/src/index.js
+          python3 -m py_compile starter-template/src/main.py
+          python3 -m unittest discover -s starter-template/tests -v
