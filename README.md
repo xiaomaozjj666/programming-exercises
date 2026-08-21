@@ -1,6 +1,39 @@
 # programming-exercises
 
+<p align="center">
+  <img src="https://img.shields.io/badge/C-gcc-A8B9CC" alt="C" />
+  <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
+  <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
+  <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
+  <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
+  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
+</p>
+
 面向初学者的多语言编程练习仓库。每个目录是一类语言的入门示例，覆盖最基础的输入输出、控制流、字符处理与算法小练习。
+
+## 示例总览
+
+```mermaid
+flowchart LR
+    subgraph C["C 语言（gcc）"]
+        C1[hello.c<br/>标准输入输出]
+        C2[char_counter.c<br/>字符统计]
+    end
+    subgraph CPP["C++（g++）"]
+        P1[hello.cpp<br/>流式输入输出]
+        P2[base_converter.cpp<br/>2-36 进制转换]
+    end
+    subgraph JS["JavaScript（node）"]
+        J1[hello.js<br/>控制台输出]
+    end
+    subgraph PY["Python（python3）"]
+        Y1[hello.py<br/>打印输出]
+    end
+    C --> CHK[CI 自动校验<br/>编译 / 语法检查]
+    CPP --> CHK
+    JS --> CHK
+    PY --> CHK
+```
 
 ## 目录结构
 
