@@ -16,20 +16,20 @@
 ```mermaid
 flowchart LR
     subgraph C["C 语言（gcc）"]
-        C1[hello.c<br/>标准输入输出]
-        C2[char_counter.c<br/>字符统计]
+        C1["hello.c<br/>标准输入输出"]
+        C2["char_counter.c<br/>字符统计"]
     end
     subgraph CPP["C++（g++）"]
-        P1[hello.cpp<br/>流式输入输出]
-        P2[base_converter.cpp<br/>2-36 进制转换]
+        P1["hello.cpp<br/>流式输入输出"]
+        P2["base_converter.cpp<br/>2-36 进制转换"]
     end
     subgraph JS["JavaScript（node）"]
-        J1[hello.js<br/>控制台输出]
+        J1["hello.js<br/>控制台输出"]
     end
     subgraph PY["Python（python3）"]
-        Y1[hello.py<br/>打印输出]
+        Y1["hello.py<br/>打印输出"]
     end
-    C --> CHK[CI 自动校验<br/>编译 / 语法检查]
+    C --> CHK["CI 自动校验<br/>编译 / 语法检查"]
     CPP --> CHK
     JS --> CHK
     PY --> CHK
