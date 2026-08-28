@@ -10,6 +10,7 @@
 //   ./base_converter              # 交互模式
 //   ./base_converter 255 10 16    # 命令行模式
 //   ./base_converter --test       # 内置测试
+// （Windows / MSVC 需额外加 /utf-8，否则中文注释会被按本地代码页误读）
 //
 // 示例：
 //   ./base_converter 255 10 16     -> FF
@@ -20,7 +21,9 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <climits>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -67,10 +70,11 @@ void parseNumber(const string& number, int base, bool& ok, int& sign,
     }
     if (intStr.empty()) intStr = "0";
 
-    // 整数部分：Horner 求值
+    // 整数部分：Horner 求值（超出 long long 范围视为非法输入，避免有符号溢出 UB）
     for (char c : intStr) {
         size_t pos = DIGITS.find((char)toupper((unsigned char)c));
         if (pos == string::npos || (int)pos >= base) return;
+        if (intPart > (LLONG_MAX - (long long)pos) / base) return;
         intPart = intPart * base + (long long)pos;
     }
     // 小数部分：累加 digit * base^-k
@@ -143,6 +147,10 @@ bool runTests() {
         {"0.5", 10, 2, "0.1"},
         {"10.5", 10, 16, "A.8"},
         {"-0.5", 10, 2, "-0.1"},
+        // 超过 2^53 的大整数（long long 仍精确；py/js 版用 int/BigInt）
+        {"9007199254740993", 10, 16, "20000000000001"},
+        // 超出 long long 范围（2^63）→ 非法输入
+        {"9223372036854775808", 10, 10, "ERROR: Invalid input!"},
         {"2", 2, 10, "ERROR: Invalid input!"},
         {"12G", 16, 10, "ERROR: Invalid input!"},
     };
@@ -164,7 +172,10 @@ int main(int argc, char* argv[]) {
         return runTests() ? 0 : 1;
     }
     if (argc == 4) {
-        cout << baseToBase(argv[1], atoi(argv[2]), atoi(argv[3])) << endl;
+        // strtol 溢出时钳位而非未定义行为，随后的 base 范围校验会拒绝非法值
+        int srcBase = (int)strtol(argv[2], nullptr, 10);
+        int dstBase = (int)strtol(argv[3], nullptr, 10);
+        cout << baseToBase(argv[1], srcBase, dstBase) << endl;
         return 0;
     }
 
