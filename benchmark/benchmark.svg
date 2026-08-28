@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="480" viewBox="0 0 860 480" font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">
+  <defs>
+    <linearGradient id="gCpp" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8E6FD8"/><stop offset="1" stop-color="#5E3FB0"/>
+    </linearGradient>
+    <linearGradient id="gPy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5AA9E6"/><stop offset="1" stop-color="#2F6FA8"/>
+    </linearGradient>
+    <linearGradient id="gNode" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6FBF5E"/><stop offset="1" stop-color="#3F8C32"/>
+    </linearGradient>
+  </defs>
+  <rect width="860" height="480" fill="#ffffff"/>
+  <!-- 标题 -->
+  <text x="430" y="34" text-anchor="middle" font-size="19" font-weight="bold" fill="#1f2430">三种语言算法耗时实测对比（越低越快 · 纵轴对数刻度）</text>
+  <!-- 图例 -->
+  <g font-size="13">
+    <rect x="246" y="48" width="16" height="16" rx="3" fill="url(#gCpp)"/>
+    <text x="268" y="61" fill="#333">C++（MSVC /O2）</text>
+    <rect x="398" y="48" width="16" height="16" rx="3" fill="url(#gPy)"/>
+    <text x="420" y="61" fill="#333">Python 3.14</text>
+    <rect x="540" y="48" width="16" height="16" rx="3" fill="url(#gNode)"/>
+    <text x="562" y="61" fill="#333">Node.js 24</text>
+  </g>
+  <!-- 绘图区: x 70..840, y 70..400 -->
+  <!-- 网格与 y 轴刻度（对数） -->
+  <g font-size="11" fill="#666">
+    <line x1="70" y1="70" x2="840" y2="70" stroke="#d0d0d0" stroke-width="1"/>
+    <text x="62" y="74" text-anchor="end">100 ms</text>
+    <line x1="70" y1="136" x2="840" y2="136" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="62" y="140" text-anchor="end">10 ms</text>
+    <line x1="70" y1="202" x2="840" y2="202" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="62" y="206" text-anchor="end">1 ms</text>
+    <line x1="70" y1="268" x2="840" y2="268" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="62" y="272" text-anchor="end">0.1 ms</text>
+    <line x1="70" y1="334" x2="840" y2="334" stroke="#e0e0e0" stroke-width="1"/>
+    <text x="62" y="338" text-anchor="end">0.01 ms</text>
+    <line x1="70" y1="400" x2="840" y2="400" stroke="#c0c0c0" stroke-width="1.5"/>
+    <text x="62" y="404" text-anchor="end">0.001 ms</text>
+  </g>
+  <!-- 组1: 线性查找 O(n) n=10000  y(0.02)=306, y(0.2112)=240, y(0.0897)=264 -->
+  <g>
+    <rect x="98"  y="306" width="60" height="94" fill="url(#gCpp)"/>
+    <rect x="173" y="240" width="60" height="160" fill="url(#gPy)"/>
+    <rect x="248" y="264" width="60" height="136" fill="url(#gNode)"/>
+    <text x="128" y="298" text-anchor="middle" font-size="11" fill="#5E3FB0" stroke="#fff" stroke-width="3" paint-order="stroke">≈0*</text>
+    <text x="203" y="232" text-anchor="middle" font-size="11" fill="#2F6FA8" stroke="#fff" stroke-width="3" paint-order="stroke">0.2112</text>
+    <text x="278" y="256" text-anchor="middle" font-size="11" fill="#3F8C32" stroke="#fff" stroke-width="3" paint-order="stroke">0.0897</text>
+    <text x="203" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f2430">线性查找 O(n)</text>
+    <text x="203" y="441" text-anchor="middle" font-size="11" fill="#888">n = 10 000</text>
+  </g>
+  <!-- 组2: 二分查找 O(log n) n=10000  y(0.02)=306, y(0.003)=361, y(0.0073)=336 -->
+  <g>
+    <rect x="355" y="306" width="60" height="94" fill="url(#gCpp)"/>
+    <rect x="430" y="361" width="60" height="39" fill="url(#gPy)"/>
+    <rect x="505" y="336" width="60" height="64" fill="url(#gNode)"/>
+    <text x="385" y="298" text-anchor="middle" font-size="11" fill="#5E3FB0" stroke="#fff" stroke-width="3" paint-order="stroke">≈0*</text>
+    <text x="460" y="347" text-anchor="middle" font-size="11" fill="#2F6FA8" stroke="#fff" stroke-width="3" paint-order="stroke">0.0030</text>
+    <text x="535" y="328" text-anchor="middle" font-size="11" fill="#3F8C32" stroke="#fff" stroke-width="3" paint-order="stroke">0.0073</text>
+    <text x="460" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f2430">二分查找 O(log n)</text>
+    <text x="460" y="441" text-anchor="middle" font-size="11" fill="#888">n = 10 000</text>
+  </g>
+  <!-- 组3: 冒泡排序 O(n^2) n=1000  y(0.4)=220, y(19.3)=109, y(5.14)=147 -->
+  <g>
+    <rect x="612" y="220" width="60" height="180" fill="url(#gCpp)"/>
+    <rect x="687" y="109" width="60" height="291" fill="url(#gPy)"/>
+    <rect x="762" y="147" width="60" height="253" fill="url(#gNode)"/>
+    <text x="642" y="212" text-anchor="middle" font-size="11" fill="#5E3FB0" stroke="#fff" stroke-width="3" paint-order="stroke">0.4</text>
+    <text x="717" y="101" text-anchor="middle" font-size="11" fill="#2F6FA8" stroke="#fff" stroke-width="3" paint-order="stroke">19.30</text>
+    <text x="792" y="139" text-anchor="middle" font-size="11" fill="#3F8C32" stroke="#fff" stroke-width="3" paint-order="stroke">5.14</text>
+    <text x="717" y="425" text-anchor="middle" font-size="13" font-weight="bold" fill="#1f2430">冒泡排序 O(n²)</text>
+    <text x="717" y="441" text-anchor="middle" font-size="11" fill="#888">n = 1 000</text>
+  </g>
+  <!-- 脚注 -->
+  <text x="70" y="468" font-size="11" fill="#777">* C++ 线性/二分查找耗时低于 0.5 ms 计时精度（输出 0 ms），图中以刻度下限表示。数据为 2026-08-21 本机实测；Python/Node 数值即仓库源码输出。</text>
+</svg>

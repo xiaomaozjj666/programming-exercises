@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
   <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
-  <img src="https://img.shields.io/badge/tests-42%20cases-brightgreen" alt="42 个内置测试用例" />
+  <img src="https://img.shields.io/badge/tests-96%20cases-brightgreen" alt="96 个内置测试用例" />
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
@@ -30,11 +30,13 @@ flowchart LR
     subgraph TEMPLATE["项目骨架"]
         ST["starter-template/<br/>四语言入口 + 真实测试"]
     end
+    BM["benchmark/ · 三语算法基准"]
     C --> CI["CI 自动校验<br/>编译 / 语法检查 / 测试"]
     CPP --> CI
     JS --> CI
     PY --> CI
     ST --> CI
+    BM --> CI
 ```
 
 ## 进制转换器（三语一致 · 支持负数与小数）
@@ -57,6 +59,26 @@ node    js/base_converter.js -123 10 2          # -> -1111011
 python3 python/base_converter.py --test
 node    js/base_converter.js --test
 ./cpp/base_converter --test
+```
+
+## 算法基准测试（benchmark/）
+
+三语一致的算法耗时实测（线性查找 / 二分查找 / 冒泡排序），同时包含进制转换断言与内置测试，并在 CI 中自动执行。下表为 2026-08-21 本机实测数据（MSVC /O2、Python 3.14、Node.js 24）：
+
+| 算法 | C++ | Python 3.14 | Node.js 24 |
+| --- | --- | --- | --- |
+| 线性查找 O(n)，n = 10 000 | ≈0 ms* | 0.2112 ms | 0.0897 ms |
+| 二分查找 O(log n)，n = 10 000 | ≈0 ms* | 0.0030 ms | 0.0073 ms |
+| 冒泡排序 O(n²)，n = 1 000 | 0.4 ms | 19.30 ms | 5.14 ms |
+
+\* C++ 线性/二分查找耗时低于 0.5 ms 计时精度。
+
+![三语算法耗时实测图表](benchmark/benchmark.svg)
+
+```bash
+g++ -O2 -std=c++11 -Wall -Wextra benchmark/benchmark.cpp -o benchmark && ./benchmark
+python3 benchmark/benchmark.py --test
+node    benchmark/benchmark.js
 ```
 
 ## 示例总览
@@ -143,11 +165,12 @@ python -m unittest discover -s tests -v   # 运行真实测试
 - Python 使用 `python3 -m py_compile`
 - 三语进制转换器各运行 `--test`（39 个断言）
 - `starter-template` 运行 `python -m unittest`（3 个真实断言）
+- `benchmark/` 三语算法基准各运行测试（54 个断言）
 
 ## 历史仓库
 
-- [`code-practice`](https://github.com/xiaomaozjj666/code-practice)：已合并至 `starter-template/`
-- [`base-conversion`](https://github.com/xiaomaozjj666/base-conversion)：进制转换已并入本仓库；其 benchmark 源码与实测图表保留在原仓库作归档
+- [`code-practice`](https://github.com/xiaomaozjj666/code-practice)：已归档；内容并入 [`starter-template/`](starter-template/)
+- [`base-conversion`](https://github.com/xiaomaozjj666/base-conversion)：已归档；进制转换并入 `python|js|cpp/base_converter.*`，benchmark 并入 [`benchmark/`](benchmark/)（2026-08-29 迁移）
 
 ## 许可证
 

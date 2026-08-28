@@ -46,3 +46,16 @@ jobs:
           node --check starter-template/src/index.js
           python3 -m py_compile starter-template/src/main.py
           python3 -m unittest discover -s starter-template/tests -v
+
+      - name: Algorithm benchmark (compile + tests)
+        run: |
+          g++ -O2 -std=c++11 -Wall -Wextra benchmark/benchmark.cpp -o "$RUNNER_TEMP/benchmark"
+          "$RUNNER_TEMP/benchmark" > "$RUNNER_TEMP/cpp_bench.txt"
+          if grep -q FAIL "$RUNNER_TEMP/cpp_bench.txt"; then cat "$RUNNER_TEMP/cpp_bench.txt"; exit 1; fi
+          n=$(grep -c PASS "$RUNNER_TEMP/cpp_bench.txt")
+          echo "C++ benchmark PASS count: $n"
+          [ "$n" -ge 18 ] || { echo "expected >=18 PASS, got $n"; exit 1; }
+          python3 benchmark/benchmark.py --test | tee "$RUNNER_TEMP/py_bench.txt"
+          if grep -q FAIL "$RUNNER_TEMP/py_bench.txt"; then exit 1; fi
+          node benchmark/benchmark.js | tee "$RUNNER_TEMP/js_bench.txt"
+          if grep -q FAIL "$RUNNER_TEMP/js_bench.txt"; then exit 1; fi
