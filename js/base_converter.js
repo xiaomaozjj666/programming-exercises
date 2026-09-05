@@ -65,6 +65,7 @@ function parseNumber(number, base) {
 
 /** 把解析结果格式化为目标进制字符串。 */
 function formatNumber(parsed, base) {
+  if (base < 2 || base > 36) return "ERROR: Invalid base!";
   const digits = [];
   let n = parsed.intPart;
   if (n === 0n) {
@@ -89,11 +90,13 @@ function formatNumber(parsed, base) {
       precision--;
     }
   }
+  if (out === "0") return "0"; // -0 规范化为 0
   return (parsed.negative ? "-" : "") + out;
 }
 
 /** 任意进制互转（2-36），支持负数与小数。 */
 function baseToBase(number, srcBase, dstBase) {
+  if (srcBase < 2 || srcBase > 36 || dstBase < 2 || dstBase > 36) return "ERROR: Invalid base!";
   const parsed = parseNumber(number, srcBase);
   if (!parsed) return "ERROR: Invalid input!";
   return formatNumber(parsed, dstBase);
@@ -117,6 +120,9 @@ function runTests() {
     // 非法输入
     ["2", 2, 10, "ERROR: Invalid input!"],
     ["12G", 16, 10, "ERROR: Invalid input!"],
+    // 进制越界
+    ["255", 10, 99, "ERROR: Invalid base!"],
+    ["FF", 99, 10, "ERROR: Invalid base!"],
   ];
   let failed = 0;
   for (const [number, src, dst, expected] of cases) {
@@ -144,7 +150,13 @@ function main() {
     console.log("ERROR: Invalid base!");
     process.exit(2);
   }
-  console.log(baseToBase(argv[0], src, dst));
+  if (src < 2 || src > 36 || dst < 2 || dst > 36) {
+    console.log("ERROR: Invalid base!");
+    process.exit(2);
+  }
+  const result = baseToBase(argv[0], src, dst);
+  console.log(result);
+  process.exitCode = result.startsWith("ERROR") ? 1 : 0;
 }
 
 main();

@@ -59,6 +59,8 @@ def parse_number(number: str, base: int):
 
 def format_number(sign: int, int_part: int, frac_part: Fraction, base: int) -> str:
     """把 (符号, 整数部分, 小数部分) 格式化为目标进制字符串。"""
+    if base < 2 or base > 36:
+        return "ERROR: Invalid base!"
     digits = []
     n = int_part
     if n == 0:
@@ -79,11 +81,15 @@ def format_number(sign: int, int_part: int, frac_part: Fraction, base: int) -> s
             out += DIGITS[digit]
             f -= digit
             precision -= 1
+    if out == "0":
+        return "0"  # -0 规范化为 0
     return ("-" if sign < 0 else "") + out
 
 
 def base_to_base(number: str, src_base: int, dst_base: int) -> str:
     """任意进制互转（2-36），支持负数与小数。"""
+    if not (2 <= src_base <= 36 and 2 <= dst_base <= 36):
+        return "ERROR: Invalid base!"
     ok, sign, int_part, frac_part = parse_number(number, src_base)
     if not ok:
         return "ERROR: Invalid input!"
@@ -108,6 +114,9 @@ def run_tests() -> bool:
         # 非法输入
         ("2", 2, 10, "ERROR: Invalid input!"),
         ("12G", 16, 10, "ERROR: Invalid input!"),
+        # 进制越界
+        ("255", 10, 99, "ERROR: Invalid base!"),
+        ("FF", 99, 10, "ERROR: Invalid base!"),
     ]
     failed = 0
     for number, src, dst, expected in cases:
@@ -132,8 +141,12 @@ def main() -> int:
     except ValueError:
         print("ERROR: Invalid base!")
         return 2
-    print(base_to_base(sys.argv[1], src, dst))
-    return 0
+    if not (2 <= src <= 36 and 2 <= dst <= 36):
+        print("ERROR: Invalid base!")
+        return 2
+    result = base_to_base(sys.argv[1], src, dst)
+    print(result)
+    return 1 if result.startswith("ERROR") else 0
 
 
 if __name__ == "__main__":

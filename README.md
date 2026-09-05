@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
   <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
-  <img src="https://img.shields.io/badge/tests-96%20cases-brightgreen" alt="96 个内置测试用例" />
+  <img src="https://img.shields.io/badge/tests-102%20cases-brightgreen" alt="102 个内置测试用例" />
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
@@ -55,7 +55,7 @@ python3 python/base_converter.py 255 10 16     # -> FF
 node    js/base_converter.js -123 10 2          # -> -1111011
 ./cpp/base_converter 10.5 10 16                 # -> A.8（先编译）
 
-# 内置测试（13+13+13 = 39 个断言）
+# 内置测试（15+15+15 = 45 个断言）
 python3 python/base_converter.py --test
 node    js/base_converter.js --test
 ./cpp/base_converter --test
@@ -163,7 +163,7 @@ python -m unittest discover -s tests -v   # 运行真实测试
 - C/C++ 示例使用 `gcc`/`g++` 编译（含 `-Wall -Wextra`）
 - JS 使用 `node --check` 语法检查
 - Python 使用 `python3 -m py_compile`
-- 三语进制转换器各运行 `--test`（39 个断言）
+- 三语进制转换器各运行 `--test`（45 个断言）
 - `starter-template` 运行 `python -m unittest`（3 个真实断言）
 - `benchmark/` 三语算法基准各运行测试（54 个断言）
 

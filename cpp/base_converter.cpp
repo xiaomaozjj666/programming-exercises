@@ -118,6 +118,7 @@ string formatNumber(int sign, long long intPart, double fracPart, int base) {
             precision--;
         }
     }
+    if (digits == "0") return "0"; // -0 规范化为 0
     return (sign < 0 ? "-" : "") + digits;
 }
 
@@ -125,6 +126,9 @@ string formatNumber(int sign, long long intPart, double fracPart, int base) {
  * 任意进制互转（2-36），支持负数与小数。
  */
 string baseToBase(const string& number, int srcBase, int dstBase) {
+    if (srcBase < 2 || srcBase > 36 || dstBase < 2 || dstBase > 36) {
+        return "ERROR: Invalid base!";
+    }
     bool ok;
     int sign;
     long long intPart;
@@ -153,6 +157,9 @@ bool runTests() {
         {"9223372036854775808", 10, 10, "ERROR: Invalid input!"},
         {"2", 2, 10, "ERROR: Invalid input!"},
         {"12G", 16, 10, "ERROR: Invalid input!"},
+        // 进制越界
+        {"255", 10, 99, "ERROR: Invalid base!"},
+        {"FF", 99, 10, "ERROR: Invalid base!"},
     };
     int failed = 0;
     for (const auto& c : cases) {
@@ -175,8 +182,13 @@ int main(int argc, char* argv[]) {
         // strtol 溢出时钳位而非未定义行为，随后的 base 范围校验会拒绝非法值
         int srcBase = (int)strtol(argv[2], nullptr, 10);
         int dstBase = (int)strtol(argv[3], nullptr, 10);
-        cout << baseToBase(argv[1], srcBase, dstBase) << endl;
-        return 0;
+        if (srcBase < 2 || srcBase > 36 || dstBase < 2 || dstBase > 36) {
+            cout << "ERROR: Invalid base!" << endl;
+            return 2;
+        }
+        string result = baseToBase(argv[1], srcBase, dstBase);
+        cout << result << endl;
+        return result.rfind("ERROR", 0) == 0 ? 1 : 0;
     }
 
     // 交互模式
@@ -187,8 +199,16 @@ int main(int argc, char* argv[]) {
     cin >> num;
     cout << "Enter source base (2-36): ";
     cin >> srcBase;
+    if (srcBase < 2 || srcBase > 36) {
+        cout << "ERROR: Invalid base!" << endl;
+        return 2;
+    }
     cout << "Enter target base (2-36): ";
     cin >> dstBase;
+    if (dstBase < 2 || dstBase > 36) {
+        cout << "ERROR: Invalid base!" << endl;
+        return 2;
+    }
 
     auto start = chrono::high_resolution_clock::now();
     string result = baseToBase(num, srcBase, dstBase);
@@ -202,5 +222,5 @@ int main(int argc, char* argv[]) {
     cout << "- parseNumber: O(n)  (n = length of input string)" << endl;
     cout << "- formatNumber: O(log_b m)  (m = decimal value, b = target base)" << endl;
     cout << "- Total: O(n + log_b m)" << endl;
-    return 0;
+    return result.rfind("ERROR", 0) == 0 ? 1 : 0;
 }
