@@ -12,10 +12,10 @@
 
 面向初学者的多语言编程练习仓库。每个目录是一类语言的入门示例，覆盖最基础的输入输出、控制流、字符处理与算法小练习。
 
-本仓库于 2026-08-22 合并了三个仓库：
+本仓库先后于 2026-08-22 与 2026-08-29 合并了三个仓库：
 - **programming-exercises**（原仓库）
 - **code-practice** → 并入 [`starter-template/`](starter-template/)（多语言项目骨架 + 真实测试）
-- **base-conversion** 的进制转换 → 并入 `python/base_converter.py`、`js/base_converter.js`、`cpp/base_converter.cpp`（三语一致，支持负数与小数）
+- **base-conversion** 的进制转换 → 并入 `python/base_converter.py`、`js/base_converter.js`、`cpp/base_converter.cpp`（三语一致，支持负数与小数），其算法基准另于 2026-08-29 并入 [`benchmark/`](benchmark/)
 
 ## 仓库总览
 
@@ -59,6 +59,18 @@ node    js/base_converter.js -123 10 2          # -> -1111011
 python3 python/base_converter.py --test
 node    js/base_converter.js --test
 ./cpp/base_converter --test
+```
+
+错误语义三语一致 · 退出码便于脚本感知：
+
+- 非法进制（源或目标进制不在 2-36，或命令行参数不是数字）→ 输出 `ERROR: Invalid base!` · 退出码 `2`
+- 非法输入（数字含超出该进制的字符，C++ 版还包括超出 `long long` 范围）→ 输出 `ERROR: Invalid input!` · 退出码 `1`
+- 转换成功 · `--test` 全部通过 → 退出码 `0`；`--test` 有失败 → 退出码 `1`
+
+```bash
+python3 python/base_converter.py 255 10 99     # -> ERROR: Invalid base!（退出码 2）
+node    js/base_converter.js 12G 16 10          # -> ERROR: Invalid input!（退出码 1）
+./cpp/base_converter 255 10 99                 # -> ERROR: Invalid base!（退出码 2）
 ```
 
 ## 算法基准测试（benchmark/）
