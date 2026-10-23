@@ -2,3 +2,14 @@ __pycache__/
 *.pyc
 .idea/
 .venv/
+
+# C/C++ 编译产物（README「如何运行」示例直接在仓库根编译）
+hello
+char_counter
+base_converter
+benchmark
+# 上一行的 benchmark 同时会匹配 benchmark/ 目录，显式重新纳入，避免忽略基准源码
+!benchmark/
+*.exe
+*.o
+*.obj

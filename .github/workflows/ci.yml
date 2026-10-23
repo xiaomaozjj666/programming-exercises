@@ -12,13 +12,28 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# 最小权限：CI 只读仓库内容
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Compile & test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
 
       - name: Compile C examples
         run: |
@@ -37,22 +52,22 @@ jobs:
 
       - name: Compile Python examples
         run: |
-          python3 -m py_compile python/hello.py
-          python3 -m py_compile python/base_converter.py
+          python -m py_compile python/hello.py
+          python -m py_compile python/base_converter.py
 
       - name: Run base converters (--test)
         run: |
           "$RUNNER_TEMP/cpp_base" --test
           node js/base_converter.js --test
-          python3 python/base_converter.py --test
+          python python/base_converter.py --test
 
       - name: Starter template (compile + real tests)
         run: |
           gcc -std=c11 -Wall -Wextra -o "$RUNNER_TEMP/st_c" starter-template/src/main.c
           g++ -std=c++17 -Wall -Wextra -o "$RUNNER_TEMP/st_cpp" starter-template/src/main.cpp
           node --check starter-template/src/index.js
-          python3 -m py_compile starter-template/src/main.py
-          python3 -m unittest discover -s starter-template/tests -v
+          python -m py_compile starter-template/src/main.py
+          python -m unittest discover -s starter-template/tests -v
 
       - name: Algorithm benchmark (compile + tests)
         run: |
@@ -62,7 +77,7 @@ jobs:
           n=$(grep -c PASS "$RUNNER_TEMP/cpp_bench.txt")
           echo "C++ benchmark PASS count: $n"
           [ "$n" -ge 18 ] || { echo "expected >=18 PASS, got $n"; exit 1; }
-          python3 benchmark/benchmark.py --test | tee "$RUNNER_TEMP/py_bench.txt"
+          python benchmark/benchmark.py --test | tee "$RUNNER_TEMP/py_bench.txt"
           if grep -q FAIL "$RUNNER_TEMP/py_bench.txt"; then exit 1; fi
           node benchmark/benchmark.js | tee "$RUNNER_TEMP/js_bench.txt"
           if grep -q FAIL "$RUNNER_TEMP/js_bench.txt"; then exit 1; fi

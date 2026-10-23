@@ -31,9 +31,12 @@ starter-template/
 | --- | --- |
 | Python | `python src/main.py` |
 | JavaScript | `node src/index.js` |
-| C | `gcc src/main.c -o build/main-c && ./build/main-c` |
-| C++ | `g++ src/main.cpp -o build/main-cpp && ./build/main-cpp` |
+| C | `mkdir -p build && gcc src/main.c -o build/main-c && ./build/main-c` |
+| C++ | `mkdir -p build && g++ src/main.cpp -o build/main-cpp && ./build/main-cpp` |
 | 测试 | `python -m unittest discover -s tests -v` |
+
+`build/` 是编译输出目录，已被 `.gitignore` 忽略，故命令前先建目录；Windows（cmd）
+把 `mkdir -p build` 换成 `mkdir build`。
 
 环境要求：Python 3、Node.js、GCC/G++（Windows 建议 MinGW-w64）。
 
