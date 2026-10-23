@@ -10,6 +10,8 @@ base_converter
 benchmark
 # 上一行的 benchmark 同时会匹配 benchmark/ 目录，显式重新纳入，避免忽略基准源码
 !benchmark/
+# README 基准示例的编译输出（避免与已跟踪的 benchmark/ 目录同名）
+benchmark_run
 *.exe
 *.o
 *.obj

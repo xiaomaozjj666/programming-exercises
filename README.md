@@ -88,7 +88,7 @@ node    js/base_converter.js 12G 16 10          # -> ERROR: Invalid input!（退
 ![三语算法耗时实测图表](benchmark/benchmark.svg)
 
 ```bash
-g++ -O2 -std=c++11 -Wall -Wextra benchmark/benchmark.cpp -o benchmark && ./benchmark
+g++ -O2 -std=c++11 -Wall -Wextra benchmark/benchmark.cpp -o benchmark_run && ./benchmark_run
 python3 benchmark/benchmark.py --test
 node    benchmark/benchmark.js
 ```
