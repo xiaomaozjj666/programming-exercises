@@ -144,12 +144,14 @@ function main() {
     console.log("用法: node base_converter.js <数字> <源进制> <目标进制>  或  --test");
     process.exit(2);
   }
-  const src = Number(argv[1]);
-  const dst = Number(argv[2]);
-  if (!Number.isInteger(src) || !Number.isInteger(dst)) {
+  // 进制参数只接受纯数字串（\d 即 ASCII 数字）：Number() 会放行
+  // '0x10'/'1e1'/'16.0'/' 16'，与 Python/C++ 版的 CLI 语义不一致
+  if (!/^\d+$/.test(argv[1]) || !/^\d+$/.test(argv[2])) {
     console.log("ERROR: Invalid base!");
     process.exit(2);
   }
+  const src = Number(argv[1]);
+  const dst = Number(argv[2]);
   if (src < 2 || src > 36 || dst < 2 || dst > 36) {
     console.log("ERROR: Invalid base!");
     process.exit(2);

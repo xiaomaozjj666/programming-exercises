@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/C%2B%2B-g%2B%2B-00599C" alt="C++" />
   <img src="https://img.shields.io/badge/JavaScript-node.js-F7DF1E" alt="JavaScript" />
   <img src="https://img.shields.io/badge/Python-3-3776AB" alt="Python" />
-  <img src="https://img.shields.io/badge/tests-102%20cases-brightgreen" alt="102 个内置测试用例" />
+  <img src="https://img.shields.io/badge/tests-117%20cases-brightgreen" alt="117 个内置测试用例" />
   <img src="https://img.shields.io/badge/CI-GitHub%20Actions-brightgreen" alt="CI 自动编译校验" />
   <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
 </p>
@@ -69,13 +69,14 @@ node    js/base_converter.js --test
 
 ```bash
 python3 python/base_converter.py 255 10 99     # -> ERROR: Invalid base!（退出码 2）
+python3 python/base_converter.py 255 0x10 2    # -> ERROR: Invalid base!（不接受十六进制字面量）
 node    js/base_converter.js 12G 16 10          # -> ERROR: Invalid input!（退出码 1）
-./cpp/base_converter 255 10 99                 # -> ERROR: Invalid base!（退出码 2）
+./cpp/base_converter 255 16abc 2               # -> ERROR: Invalid base!（不接受尾部垃圾字符）
 ```
 
 ## 算法基准测试（benchmark/）
 
-三语一致的算法耗时实测（线性查找 / 二分查找 / 冒泡排序），同时包含进制转换断言与内置测试，并在 CI 中自动执行。下表为 2026-08-21 本机实测数据（MSVC /O2、Python 3.14、Node.js 24）：
+三语一致的算法耗时实测（线性查找 / 二分查找 / 冒泡排序），同时包含进制转换断言与内置测试，并在 CI 中自动执行。下表为 2026-08-21 本机实测数据（C++ 列为 MSVC /O2 实测，Python 3.14、Node.js 24）：
 
 | 算法 | C++ | Python 3.14 | Node.js 24 |
 | --- | --- | --- | --- |
@@ -83,7 +84,7 @@ node    js/base_converter.js 12G 16 10          # -> ERROR: Invalid input!（退
 | 二分查找 O(log n)，n = 10 000 | ≈0 ms* | 0.0030 ms | 0.0073 ms |
 | 冒泡排序 O(n²)，n = 1 000 | 0.4 ms | 19.30 ms | 5.14 ms |
 
-\* C++ 线性/二分查找耗时低于 0.5 ms 计时精度。
+\* C++ 线性/二分查找耗时低于 0.5 ms 计时精度。复现命令使用 g++，与 MSVC 实测的绝对数值会有差异（编译器不同），但量级与相对关系一致；CI 中的 C++ 一列即以 g++ 编译验证。
 
 ![三语算法耗时实测图表](benchmark/benchmark.svg)
 
@@ -130,6 +131,7 @@ gcc c/hello.c -o hello
 gcc c/char_counter.c -o char_counter
 echo "Hello 123" | ./char_counter
 # 输出：1 4 1 3 0 （大写 小写 空格 数字 其他）
+# 注意：单行最多读 100 字符（101 字节缓冲含 '\0'），超长部分截断
 ```
 
 ### C++
@@ -175,9 +177,9 @@ python -m unittest discover -s tests -v   # 运行真实测试
 - C/C++ 示例使用 `gcc`/`g++` 编译（含 `-Wall -Wextra`）
 - JS 使用 `node --check` 语法检查
 - Python 使用 `python3 -m py_compile`
-- 三语进制转换器各运行 `--test`（45 个断言）
+- 三语进制转换器各运行 `--test`（45 个断言），并实测三语 CLI 错误语义一致（`0x10`/`16abc` 等非法进制参数一律退出码 2）
 - `starter-template` 运行 `python -m unittest`（3 个真实断言）
-- `benchmark/` 三语算法基准各运行测试（54 个断言）
+- `benchmark/` 三语算法基准各运行测试（69 个断言：18 个进制转换 + 5 个查找/排序断言 × 三语，任一失败退出码非 0）
 
 ## 历史仓库
 

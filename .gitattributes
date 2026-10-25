@@ -1,0 +1,2 @@
+# 仓库内所有文本文件统一 LF（与 starter-template/ 自带的 .gitattributes 行为一致）
+* text=auto eol=lf

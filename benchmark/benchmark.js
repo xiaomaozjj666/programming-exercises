@@ -67,8 +67,10 @@ function bubbleSort(arr) {
   return a;
 }
 
+let failures = 0;
 function test(name, got, expected) {
   const ok = got === expected;
+  if (!ok) failures++;
   console.log(`  ${name}: ${got} (expected ${expected}) ${ok ? "PASS" : "FAIL"}`);
 }
 
@@ -85,12 +87,12 @@ function runTests() {
 
   console.log("\n=== 算法测试 ===\n");
   const arr = [1,3,5,7,9,11,13,15,17,19];
-  console.log(`LinearSearch: find 11 in [${arr}] -> index ${linearSearch(arr,11)} (expected 5)`);
-  console.log(`LinearSearch: find 20 in [${arr}] -> index ${linearSearch(arr,20)} (expected -1)`);
-  console.log(`BinarySearch: find 11 in [${arr}] -> index ${binarySearch(arr,11)} (expected 5)`);
-  console.log(`BinarySearch: find 20 in [${arr}] -> index ${binarySearch(arr,20)} (expected -1)`);
+  test("LinearSearch: find 11", linearSearch(arr,11), 5);
+  test("LinearSearch: find 20", linearSearch(arr,20), -1);
+  test("BinarySearch: find 11", binarySearch(arr,11), 5);
+  test("BinarySearch: find 20", binarySearch(arr,20), -1);
   const unsorted = [9,3,7,1,5,11,13,2,4,8];
-  console.log(`BubbleSort: [${unsorted}] -> [${bubbleSort(unsorted)}]`);
+  test("BubbleSort", JSON.stringify(bubbleSort(unsorted)), JSON.stringify([...unsorted].sort((a,b)=>a-b)));
 
   console.log("\n=== 时间复杂度分析 ===\n");
   const big = Array.from({length:10000}, () => Math.floor(Math.random()*10000));
@@ -105,14 +107,26 @@ function runTests() {
   const small = Array.from({length:1000}, () => Math.floor(Math.random()*1000));
   t0 = performance.now(); bubbleSort(small); t1 = performance.now();
   console.log(`BubbleSort O(n^2):   ${(t1-t0).toFixed(4)}ms (n=1000)`);
+
+  if (failures > 0) {
+    console.log(`\n共 ${failures} 项 FAIL`);
+    process.exit(1);
+  }
 }
 
 const mode = process.argv[2];
 if (mode === "--convert") {
   const num = process.argv[3];
-  const fromB = parseInt(process.argv[4] || "10", 10);
-  const toB = parseInt(process.argv[5] || "10", 10);
+  // 进制参数只接受纯数字串：parseInt("16abc", 10) 会静默当 16 用
+  const parseBase = (s) => {
+    if (!/^\d+$/.test(s)) throw new Error("base must be digits only");
+    const b = Number(s);
+    if (b < 2 || b > 36) throw new Error("base must be 2-36");
+    return b;
+  };
   try {
+    const fromB = parseBase(process.argv[4] || "10");
+    const toB = parseBase(process.argv[5] || "10");
     const dec = baseToDecimal(num, fromB);
     console.log(toB === 10 ? dec : decimalToBase(dec, toB));
   } catch(e) { console.error("Error:", e.message); process.exit(1); }

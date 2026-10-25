@@ -130,15 +130,25 @@ def run_tests() -> bool:
     return failed == 0
 
 
+def _parse_base(s: str) -> int | None:
+    """进制参数只接受纯 ASCII 数字串。
+
+    int() 会放行 ' 16 '（首尾空白）和 '1_6'（下划线分组）；三语 CLI 语义
+    要求一致，这里显式收紧（JS/C++ 版同此规则）。
+    """
+    if not (s.isascii() and s.isdigit()):
+        return None
+    return int(s)
+
+
 def main() -> int:
     if len(sys.argv) == 2 and sys.argv[1] == "--test":
         return 0 if run_tests() else 1
     if len(sys.argv) != 4:
         print("用法: python3 base_converter.py <数字> <源进制> <目标进制>  或  --test")
         return 2
-    try:
-        src, dst = int(sys.argv[2]), int(sys.argv[3])
-    except ValueError:
+    src, dst = _parse_base(sys.argv[2]), _parse_base(sys.argv[3])
+    if src is None or dst is None:
         print("ERROR: Invalid base!")
         return 2
     if not (2 <= src <= 36 and 2 <= dst <= 36):

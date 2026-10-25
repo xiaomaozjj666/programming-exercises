@@ -11,6 +11,7 @@
 #include <sstream>
 #include <cctype>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 
 // ==================== Base Conversion Functions ====================
@@ -30,10 +31,12 @@ std::string decimalToBase(double decimal, int base) {
 
     // Values beyond the long long range (or non-finite) would make the
     // static_cast below undefined behavior; fall back to decimal scientific notation.
+    // max_digits10 保证 double 的往返精度（默认 6 位会把 12345678901 打成 1.23457e+10）。
     double absDecimal = std::abs(decimal);
     if (!(absDecimal < 9.2233720368547758e18) ||
         (base == 10 && (absDecimal > 1e10 || absDecimal < 1e-6))) {
         std::stringstream ss;
+        ss.precision(std::numeric_limits<double>::max_digits10);
         ss << decimal;
         return ss.str();
     }
@@ -284,10 +287,22 @@ std::vector<int> bubbleSort(std::vector<int> arr) {
 
 // ==================== Test Cases ====================
 
-/**
- * Test arbitrary base conversion
- */
-void testArbitraryBaseConversion();
+// 失败计数：与 Python/JS 版一致，任何断言失败都让进程以非零码退出
+static int g_failures = 0;
+
+void checkResult(const std::string& label, const std::string& got, const std::string& expected) {
+    bool passed = (got == expected);
+    if (!passed) ++g_failures;
+    std::cout << "  " << label << ": " << got << " (expected " << expected << ") "
+              << (passed ? "PASS" : "FAIL") << std::endl;
+}
+
+void checkResult(const std::string& label, double got, double expected) {
+    bool passed = (got == expected);
+    if (!passed) ++g_failures;
+    std::cout << "  " << label << ": " << got << " (expected " << expected << ") "
+              << (passed ? "PASS" : "FAIL") << std::endl;
+}
 
 /**
  * Test decimal to binary conversion
@@ -295,9 +310,7 @@ void testArbitraryBaseConversion();
  * @param expected The expected binary output
  */
 void testDecimalToBinary(int input, const std::string& expected) {
-    std::string result = decimalToBinary(input);
-    bool passed = (result == expected);
-    std::cout << "Input: " << input << ", Expected: " << expected << ", Result: " << result << ", " << (passed ? "PASS" : "FAIL") << std::endl;
+    checkResult("dec " + std::to_string(input) + " -> bin", decimalToBinary(input), expected);
 }
 
 /**
@@ -306,9 +319,7 @@ void testDecimalToBinary(int input, const std::string& expected) {
  * @param expected The expected decimal output
  */
 void testBinaryToDecimal(const std::string& input, int expected) {
-    double result = binaryToDecimal(input);
-    bool passed = (static_cast<int>(result) == expected);
-    std::cout << "Input: " << input << ", Expected: " << expected << ", Result: " << result << ", " << (passed ? "PASS" : "FAIL") << std::endl;
+    checkResult("bin " + input + " -> dec", binaryToDecimal(input), expected);
 }
 
 /**
@@ -317,9 +328,7 @@ void testBinaryToDecimal(const std::string& input, int expected) {
  * @param expected The expected hexadecimal output
  */
 void testDecimalToHexadecimal(int input, const std::string& expected) {
-    std::string result = decimalToHexadecimal(input);
-    bool passed = (result == expected);
-    std::cout << "Input: " << input << ", Expected: " << expected << ", Result: " << result << ", " << (passed ? "PASS" : "FAIL") << std::endl;
+    checkResult("dec " + std::to_string(input) + " -> hex", decimalToHexadecimal(input), expected);
 }
 
 /**
@@ -328,61 +337,7 @@ void testDecimalToHexadecimal(int input, const std::string& expected) {
  * @param expected The expected decimal output
  */
 void testHexadecimalToDecimal(const std::string& input, int expected) {
-    double result = hexadecimalToDecimal(input);
-    bool passed = (static_cast<int>(result) == expected);
-    std::cout << "Input: " << input << ", Expected: " << expected << ", Result: " << result << ", " << (passed ? "PASS" : "FAIL") << std::endl;
-}
-
-// Format double to string with specified precision
-std::string formatDouble(double value, int precision = 3) {
-    std::stringstream ss;
-    ss.precision(precision);
-    ss << value;
-    return ss.str();
-}
-
-// Parse double from string
- double parseDouble(const std::string& str) {
-    std::stringstream ss(str);
-    double value;
-    ss >> value;
-    return value;
-}
-
-// Simple expression evaluator for basic arithmetic operations
-double evaluateExpression(const std::string& expr) {
-    // This is a very simple expression evaluator
-    // For more complex expressions, a proper parser would be needed
-    std::stringstream ss(expr);
-    double result = 0.0;
-    if (!(ss >> result)) {
-        throw std::invalid_argument("Invalid expression");
-    }
-
-    char op;
-    double operand;
-    while (ss >> op >> operand) {
-        switch (op) {
-            case '+':
-                result += operand;
-                break;
-            case '-':
-                result -= operand;
-                break;
-            case '*':
-                result *= operand;
-                break;
-            case '/':
-                if (operand == 0) {
-                    throw std::invalid_argument("Division by zero");
-                }
-                result /= operand;
-                break;
-            default:
-                throw std::invalid_argument("Invalid operator");
-        }
-    }
-    return result;
+    checkResult("hex " + input + " -> dec", hexadecimalToDecimal(input), expected);
 }
 
 /**
@@ -435,6 +390,11 @@ void demonstrateTimeComplexity() {
 }
 
 /**
+ * Test arbitrary base conversion
+ */
+void testArbitraryBaseConversion();
+
+/**
  * Run all test cases
  */
 void runTests() {
@@ -471,57 +431,21 @@ void runTests() {
     testHexadecimalToDecimal("3E8", 1000);
     
     std::cout << "\n=== Time Complexity Algorithm Tests ===" << std::endl;
-    
-    // Test linear search
-    std::cout << "Linear Search:" << std::endl;
+
+    // 断言式自检（与 Python/JS 版一致）：查找/排序结果错了 CI 必须红
     std::vector<int> testArray = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19};
-    std::cout << "Searching for 11 in [";
-    for (size_t i = 0; i < testArray.size(); i++) {
-        std::cout << testArray[i];
-        if (i < testArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]: " << linearSearch(testArray, 11) << std::endl;
-    
-    std::cout << "Searching for 20 in [";
-    for (size_t i = 0; i < testArray.size(); i++) {
-        std::cout << testArray[i];
-        if (i < testArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]: " << linearSearch(testArray, 20) << std::endl;
-    
-    // Test binary search
-    std::cout << "\nBinary Search:" << std::endl;
-    std::cout << "Searching for 11 in [";
-    for (size_t i = 0; i < testArray.size(); i++) {
-        std::cout << testArray[i];
-        if (i < testArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]: " << binarySearch(testArray, 11) << std::endl;
-    
-    std::cout << "Searching for 20 in [";
-    for (size_t i = 0; i < testArray.size(); i++) {
-        std::cout << testArray[i];
-        if (i < testArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]: " << binarySearch(testArray, 20) << std::endl;
-    
-    // Test bubble sort
-    std::cout << "\nBubble Sort:" << std::endl;
+    checkResult("LinearSearch: find 11", static_cast<double>(linearSearch(testArray, 11)), 5.0);
+    checkResult("LinearSearch: find 20", static_cast<double>(linearSearch(testArray, 20)), -1.0);
+    checkResult("BinarySearch: find 11", static_cast<double>(binarySearch(testArray, 11)), 5.0);
+    checkResult("BinarySearch: find 20", static_cast<double>(binarySearch(testArray, 20)), -1.0);
+
     std::vector<int> unsortedArray = {9, 3, 7, 1, 5, 11, 13, 2, 4, 8};
-    std::cout << "Original array: [";
-    for (size_t i = 0; i < unsortedArray.size(); i++) {
-        std::cout << unsortedArray[i];
-        if (i < unsortedArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]" << std::endl;
-    
     std::vector<int> sortedArray = bubbleSort(unsortedArray);
-    std::cout << "Sorted array: [";
-    for (size_t i = 0; i < sortedArray.size(); i++) {
-        std::cout << sortedArray[i];
-        if (i < sortedArray.size() - 1) std::cout << ", ";
-    }
-    std::cout << "]" << std::endl;
+    std::vector<int> expectedSorted = unsortedArray;
+    std::sort(expectedSorted.begin(), expectedSorted.end());
+    checkResult("BubbleSort",
+                sortedArray == expectedSorted ? "sorted" : "wrong order",
+                "sorted");
     
     // Time complexity demonstration
     std::cout << "\n=== Time Complexity Analysis ===" << std::endl;
@@ -530,6 +454,10 @@ void runTests() {
     // Test arbitrary base conversion
     std::cout << "\n=== Arbitrary Base Conversion Tests ===" << std::endl;
     testArbitraryBaseConversion();
+
+    if (g_failures > 0) {
+        std::cout << "\n" << g_failures << " check(s) FAIL" << std::endl;
+    }
 }
 
 /**
@@ -618,286 +546,8 @@ void testArbitraryBaseConversion() {
     std::cout << "   - Combines the time complexity of baseToDecimal and decimalToBase" << std::endl;
 }
 
-// Simple JSON parser for test cases
-struct TestCase {
-    std::string type;
-    int input_base;
-    std::string input_number;
-    int output_base;
-    std::string output_number;
-};
-
-// Skip whitespace
-inline void skipWhitespace(const std::string& content, size_t& pos) {
-    while (pos < content.size() && std::isspace(static_cast<unsigned char>(content[pos]))) {
-        pos++;
-    }
-}
-
-// Parse string value
-inline std::string parseString(const std::string& content, size_t& pos) {
-    if (pos >= content.size() || content[pos] != '"') {
-        return "";
-    }
-    pos++;
-    size_t start = pos;
-    while (pos < content.size() && content[pos] != '"') {
-        if (content[pos] == '\\' && pos + 1 < content.size()) {
-            pos += 2; // Skip escaped character
-        } else {
-            pos++;
-        }
-    }
-    if (pos >= content.size()) {
-        return "";
-    }
-    std::string result = content.substr(start, pos - start);
-    pos++; // Skip closing quote
-    return result;
-}
-
-// Parse number value
-inline int parseNumber(const std::string& content, size_t& pos) {
-    skipWhitespace(content, pos);
-    size_t start = pos;
-    while (pos < content.size() &&
-           (std::isdigit(static_cast<unsigned char>(content[pos])) || content[pos] == '-')) {
-        pos++;
-    }
-    if (start == pos) {
-        return 0;
-    }
-    try {
-        return std::stoi(content.substr(start, pos - start));
-    } catch (const std::exception&) {
-        return 0; // Malformed or out-of-range number
-    }
-}
-
-// Parse JSON object
-inline TestCase parseObject(const std::string& content, size_t& pos) {
-    TestCase tc;
-    if (pos >= content.size() || content[pos] != '{') {
-        return tc;
-    }
-    pos++;
-    
-    while (pos < content.size() && content[pos] != '}') {
-        skipWhitespace(content, pos);
-        if (pos >= content.size()) break;
-        
-        std::string key = parseString(content, pos);
-        skipWhitespace(content, pos);
-        if (pos >= content.size() || content[pos] != ':') break;
-        pos++;
-        
-        if (key == "type") {
-            tc.type = parseString(content, pos);
-        } else if (key == "input_base") {
-            tc.input_base = parseNumber(content, pos);
-        } else if (key == "input_number") {
-            tc.input_number = parseString(content, pos);
-        } else if (key == "output_base") {
-            tc.output_base = parseNumber(content, pos);
-        } else if (key == "output_number") {
-            tc.output_number = parseString(content, pos);
-        }
-        
-        skipWhitespace(content, pos);
-        if (pos < content.size() && content[pos] == ',') {
-            pos++;
-        }
-    }
-    
-    if (pos < content.size() && content[pos] == '}') {
-        pos++;
-    }
-    
-    return tc;
-}
-
-// Parse JSON array of test cases
-std::vector<TestCase> parseTestCases(const std::string& jsonFile) {
-    std::vector<TestCase> testCases;
-    std::ifstream file(jsonFile);
-    if (!file.is_open()) {
-        std::cerr << "Failed to open JSON file: " << jsonFile << std::endl;
-        return testCases;
-    }
-
-    std::string line, content;
-    while (std::getline(file, line)) {
-        content += line;
-    }
-    file.close();
-
-    size_t pos = 0;
-    skipWhitespace(content, pos);
-    
-    if (pos >= content.size() || content[pos] != '[') {
-        return testCases;
-    }
-    pos++;
-
-    while (pos < content.size()) {
-        skipWhitespace(content, pos);
-        if (pos >= content.size()) break;
-        
-        if (content[pos] == '{') {
-            TestCase tc = parseObject(content, pos);
-            testCases.push_back(tc);
-        } else if (content[pos] == ']') {
-            pos++;
-            break;
-        } else if (content[pos] == ',') {
-            pos++;
-        } else {
-            pos++;
-        }
-    }
-
-    return testCases;
-}
-
-// Run tests from JSON file
-void runJsonTests(const std::string& jsonFile) {
-    std::vector<TestCase> testCases = parseTestCases(jsonFile);
-    if (testCases.empty()) {
-        std::cerr << "No test cases found in " << jsonFile << std::endl;
-        return;
-    }
-    std::cout << "Running " << testCases.size() << " test cases from JSON file" << std::endl;
-    
-    int passed = 0;
-    int failed = 0;
-    
-    for (size_t i = 0; i < testCases.size(); i++) {
-        const TestCase& tc = testCases[i];
-        std::cout << "\nTest " << i + 1 << ": " << tc.type << std::endl;
-        std::cout << "Input: " << tc.input_number << " (base " << tc.input_base << ")" << std::endl;
-        std::cout << "Expected output: " << tc.output_number << " (base " << tc.output_base << ")" << std::endl;
-        
-        std::string result;
-        auto start = std::chrono::high_resolution_clock::now();
-        
-        if (tc.type == "TRANSLATION") {
-            try {
-                double decimal = baseToDecimal(tc.input_number, tc.input_base);
-                result = decimalToBase(decimal, tc.output_base);
-
-                // Handle special cases where expected output is the same as input
-                if (tc.output_base == tc.input_base && tc.output_number == tc.input_number) {
-                    result = tc.input_number;
-                }
-
-                // Handle cases where expected output is just the decimal value
-                if (tc.output_base == 10 && tc.output_number.find('.') != std::string::npos) {
-                    // Format to match the expected output precision
-                    size_t dotPos = tc.output_number.find('.');
-                    int precision = static_cast<int>(tc.output_number.length() - dotPos - 1);
-                    result = formatDouble(decimal, precision);
-                }
-            } catch (const std::exception&) {
-                result = "ERROR";
-            }
-        } else if (tc.type == "EXPRESSION") {
-            try {
-                double exprResult = evaluateExpression(tc.input_number);
-                result = decimalToBase(exprResult, tc.output_base);
-
-                // Handle cases where expected output is in decimal format
-                if (tc.output_base == 10 && tc.output_number.find('.') != std::string::npos) {
-                    // Format to match the expected output precision
-                    size_t dotPos = tc.output_number.find('.');
-                    int precision = static_cast<int>(tc.output_number.length() - dotPos - 1);
-                    result = formatDouble(exprResult, precision);
-                }
-            } catch (const std::exception&) {
-                result = "ERROR";
-            }
-        }
-        
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        
-        std::cout << "Actual output: " << result << std::endl;
-        std::cout << "Execution time: " << duration.count() / 1000.0 << "ms" << std::endl;
-        
-        // Time complexity analysis
-        std::cout << "Time Complexity: "
-                  << (tc.type == "TRANSLATION" || tc.type == "EXPRESSION" ? "O(n + log_b m)" : "O(1)")
-                  << std::endl;
-        
-        // Compare results with some tolerance for floating point differences
-        bool passedTest = false;
-
-        // Exact string match
-        if (result == tc.output_number) {
-            passedTest = true;
-        } else if (tc.output_number == "ERROR" && result == "ERROR") {
-            passedTest = true;
-        } else if (tc.output_base == 10) {
-            // For decimal output, compare as numbers with tolerance
-            double resultVal = parseDouble(result);
-            double expectedVal = parseDouble(tc.output_number);
-            // Allow small epsilon for floating point differences
-            if (std::abs(resultVal - expectedVal) < 1e-6) {
-                passedTest = true;
-            }
-        } else {
-            // For non-decimal bases, handle case-insensitive comparison
-            std::string resultUpper = result;
-            std::string expectedUpper = tc.output_number;
-            std::transform(resultUpper.begin(), resultUpper.end(), resultUpper.begin(),
-                           [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-            std::transform(expectedUpper.begin(), expectedUpper.end(), expectedUpper.begin(),
-                           [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
-
-            if (resultUpper == expectedUpper) {
-                passedTest = true;
-            }
-        }
-
-        // If still not passed, try to compare as numbers for any base
-        if (!passedTest) {
-            try {
-                double resultVal = baseToDecimal(result, tc.output_base);
-                double expectedVal = baseToDecimal(tc.output_number, tc.output_base);
-                // Allow small epsilon for floating point differences
-                if (std::abs(resultVal - expectedVal) < 1e-6) {
-                    passedTest = true;
-                }
-            } catch (const std::exception&) {
-                // Values not parseable in the output base - keep the string verdict
-            }
-        }
-        
-        if (passedTest) {
-            std::cout << "Status: PASS" << std::endl;
-            passed++;
-        } else {
-            std::cout << "Status: FAIL" << std::endl;
-            failed++;
-        }
-    }
-    
-    std::cout << "\n=== Test Summary ===" << std::endl;
-    std::cout << "Total tests: " << testCases.size() << std::endl;
-    std::cout << "Passed: " << passed << std::endl;
-    std::cout << "Failed: " << failed << std::endl;
-    std::cout << "Success rate: " << (static_cast<double>(passed) / testCases.size()) * 100 << "%" << std::endl;
-}
-
-int main(int argc, char* argv[]) {
-    // Run original tests
+int main() {
     runTests();
-
-    // Run tests from a JSON file only when a path is provided as argument
-    if (argc > 1) {
-        runJsonTests(argv[1]);
-    } else {
-        std::cout << "\nNo JSON test file provided. Pass a path as a command-line argument to run JSON tests." << std::endl;
-    }
-
-    return 0;
+    // 与 Python/JS 版一致：任何断言失败都以非零码退出（CI 依赖退出码与 FAIL 计数）
+    return g_failures > 0 ? 1 : 0;
 }

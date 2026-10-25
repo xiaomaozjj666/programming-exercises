@@ -69,6 +69,38 @@ jobs:
           python -m py_compile starter-template/src/main.py
           python -m unittest discover -s starter-template/tests -v
 
+      - name: CLI error semantics agree across three languages
+        run: |
+          # README 承诺"错误语义三语一致"：进制参数必须严格解析，
+          # 0x10 / 16.0 / 1e1 / 1_6 / 16abc / 前导空格一律拒绝（退出码 2）。
+          # 此前 JS 的 Number() 接受 0x10/1e1、C++ 的 strtol 接受 16abc、
+          # Python 的 int() 接受 1_6——三处已分别修复，此步骤锁定行为。
+          reject() {
+            if "$@" > /dev/null 2>&1; then
+              echo "UNEXPECTED SUCCESS (want exit 2): $*" >&2; exit 1;
+            fi
+          }
+          PY=python/base_converter.py
+          JS=js/base_converter.js
+          CPP="$RUNNER_TEMP/cpp_base"
+          reject python3 "$PY" 255 0x10 2
+          reject python3 "$PY" 255 16.0 2
+          reject python3 "$PY" 255 1_6 2
+          reject python3 "$PY" 255 " 16" 2
+          reject node "$JS" 255 0x10 2
+          reject node "$JS" 255 16.0 2
+          reject node "$JS" 255 1e1 2
+          reject node "$JS" 255 " 16" 2
+          reject "$CPP" 255 0x10 2
+          reject "$CPP" 255 16.0 2
+          reject "$CPP" 255 16abc 2
+          reject "$CPP" 255 " 16" 2
+          # 合法参数的 CLI 冒烟：三语输出必须一致（255 十进制 → 十六进制 FF）
+          [ "$(python3 "$PY" 255 10 16)" = "FF" ]
+          [ "$(node "$JS" 255 10 16)" = "FF" ]
+          [ "$("$CPP" 255 10 16)" = "FF" ]
+          echo "CLI error semantics: 3 languages x 4 bad inputs + happy path OK"
+
       - name: Algorithm benchmark (compile + tests)
         run: |
           g++ -O2 -std=c++11 -Wall -Wextra benchmark/benchmark.cpp -o "$RUNNER_TEMP/benchmark"
@@ -76,8 +108,12 @@ jobs:
           if grep -q FAIL "$RUNNER_TEMP/cpp_bench.txt"; then cat "$RUNNER_TEMP/cpp_bench.txt"; exit 1; fi
           n=$(grep -c PASS "$RUNNER_TEMP/cpp_bench.txt")
           echo "C++ benchmark PASS count: $n"
-          [ "$n" -ge 18 ] || { echo "expected >=18 PASS, got $n"; exit 1; }
+          [ "$n" -ge 23 ] || { echo "expected >=23 PASS, got $n"; exit 1; }
           python benchmark/benchmark.py --test | tee "$RUNNER_TEMP/py_bench.txt"
           if grep -q FAIL "$RUNNER_TEMP/py_bench.txt"; then exit 1; fi
           node benchmark/benchmark.js | tee "$RUNNER_TEMP/js_bench.txt"
           if grep -q FAIL "$RUNNER_TEMP/js_bench.txt"; then exit 1; fi
+          p=$(grep -c PASS "$RUNNER_TEMP/py_bench.txt")
+          j=$(grep -c PASS "$RUNNER_TEMP/js_bench.txt")
+          echo "Python benchmark PASS count: $p / JS: $j"
+          [ "$p" -ge 23 ] && [ "$j" -ge 23 ] || { echo "expected >=23 PASS each, got py=$p js=$j"; exit 1; }

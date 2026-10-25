@@ -70,8 +70,12 @@ def bubble_sort(arr):
                 a[j], a[j + 1] = a[j + 1], a[j]
     return a
 
+FAILURES = 0
+
 def test_conv(name, got, expected):
+    global FAILURES
     ok = got == expected
+    if not ok: FAILURES += 1
     print(f"  {name}: {got} (expected {expected}) {'PASS' if ok else 'FAIL'}")
 
 def run_tests():
@@ -91,12 +95,12 @@ def run_tests():
 
     print("\n=== 算法测试 ===\n")
     arr = [1,3,5,7,9,11,13,15,17,19]
-    print(f"LinearSearch: find 11 in {arr} -> index {linear_search(arr,11)} (expected 5)")
-    print(f"LinearSearch: find 20 in {arr} -> index {linear_search(arr,20)} (expected -1)")
-    print(f"BinarySearch: find 11 in {arr} -> index {binary_search(arr,11)} (expected 5)")
-    print(f"BinarySearch: find 20 in {arr} -> index {binary_search(arr,20)} (expected -1)")
+    test_conv("LinearSearch: find 11", linear_search(arr,11), 5)
+    test_conv("LinearSearch: find 20", linear_search(arr,20), -1)
+    test_conv("BinarySearch: find 11", binary_search(arr,11), 5)
+    test_conv("BinarySearch: find 20", binary_search(arr,20), -1)
     unsorted = [9,3,7,1,5,11,13,2,4,8]
-    print(f"BubbleSort: {unsorted} -> {bubble_sort(unsorted)}")
+    test_conv("BubbleSort", bubble_sort(unsorted), sorted(unsorted))
 
     print("\n=== 时间复杂度分析 ===\n")
     big = [random.randint(0,9999) for _ in range(10000)]
@@ -113,20 +117,24 @@ def run_tests():
     print(f"BubbleSort O(n^2):   {(t1-t0)*1000:.4f}ms (n=1000)")
 
     print("\nBinarySearch > LinearSearch > BubbleSort 的时间复杂度对比.")
+    if FAILURES:
+        print(f"\n共 {FAILURES} 项 FAIL")
+        sys.exit(1)
 
 def run_convert(args):
     try:
-        if args.from_base and args.to_base:
+        if args.from_base is not None:
+            # 显式判 None：--from-base 0 是非法值，不能当"未提供"静默忽略
+            if not 2 <= args.from_base <= 36: raise ValueError("from-base must be 2-36")
             dec = base_to_decimal(args.number, args.from_base)
-            if args.to_base == 10:
-                res = dec
-            else:
-                res = decimal_to_base(dec, args.to_base)
-        elif args.from_base:
-            print(base_to_decimal(args.number, args.from_base))
-            return
+            to_base = args.to_base if args.to_base is not None else 10
+            if not 2 <= to_base <= 36: raise ValueError("to-base must be 2-36")
+            res = dec if to_base == 10 else decimal_to_base(dec, to_base)
+        elif args.to_base is not None:
+            if not 2 <= args.to_base <= 36: raise ValueError("to-base must be 2-36")
+            res = decimal_to_base(int(args.number, 10), args.to_base)
         else:
-            res = decimal_to_base(int(args.number, 10), args.to_base or 10)
+            raise ValueError("需要 --from-base 或 --to-base")
         print(res)
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr); sys.exit(1)

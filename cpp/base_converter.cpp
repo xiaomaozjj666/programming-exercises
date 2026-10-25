@@ -22,8 +22,8 @@
 #include <cctype>
 #include <chrono>
 #include <climits>
-#include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -179,6 +179,15 @@ int main(int argc, char* argv[]) {
         return runTests() ? 0 : 1;
     }
     if (argc == 4) {
+        // 进制参数只接受纯数字串：strtol 会放行 "16abc"（尾部垃圾）与
+        // " 16"（前导空白），与 Python/JS 版的 CLI 语义不一致
+        auto digitsOnly = [](const char* s) {
+            return s[0] != '\0' && s[strspn(s, "0123456789")] == '\0';
+        };
+        if (!digitsOnly(argv[2]) || !digitsOnly(argv[3])) {
+            cout << "ERROR: Invalid base!" << endl;
+            return 2;
+        }
         // strtol 溢出时钳位而非未定义行为，随后的 base 范围校验会拒绝非法值
         int srcBase = (int)strtol(argv[2], nullptr, 10);
         int dstBase = (int)strtol(argv[3], nullptr, 10);
